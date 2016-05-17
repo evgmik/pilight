@@ -276,7 +276,7 @@ static int allwinnerA31sDigitalRead(int i) {
 
 	pin = &allwinnerA31s->layout[allwinnerA31s->map[i]];
 	gpio = allwinnerA31s->gpio[pin->addr];
-	addr = (unsigned long)(gpio + allwinnerA31s->base_offs[pin->addr] + pin->select.offset);
+	addr = (unsigned long)(gpio + allwinnerA31s->base_offs[pin->addr] + pin->data.offset);
 
 	if(allwinnerA31s->map == NULL) {
 		wiringXLog(LOG_ERR, "The %s %s has not yet been mapped", allwinnerA31s->brand, allwinnerA31s->chip);
@@ -316,12 +316,13 @@ static int allwinnerA31sPinMode(int i, enum pinmode_t mode) {
 
 	val = soc_readl(addr);
 	if(mode == PINMODE_OUTPUT) {
-		soc_writel(addr, val | (1 << pin->select.bit));
+		val |= (1 << pin->select.bit);
 	} else if(mode == PINMODE_INPUT) {
-		soc_writel(addr, val & ~(1 << pin->select.bit));
+		val &= ~(1 << pin->select.bit);
 	}
-	soc_writel(addr, val & ~(1 << (pin->select.bit+1)));
-	soc_writel(addr, val & ~(1 << (pin->select.bit+2)));
+	val &= ~(1 << (pin->select.bit+1));
+	val &= ~(1 << (pin->select.bit+2));
+	soc_writel(addr, val);
 	return 0;
 }
 
